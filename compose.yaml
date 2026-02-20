@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    container_name: hikkasay-bot
+    env_file:
+      - .env
+    volumes:
+      - data:/app/data
+    environment:
+      DATA_DIR: /app/data
+
+volumes:
+  data:

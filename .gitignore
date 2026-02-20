@@ -1,0 +1,6 @@
+_build/
+node_modules/
+data
+.env
+.deno_cache
+hikkasay
