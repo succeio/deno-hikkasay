@@ -1,4 +1,4 @@
-import type { FetchBody, ModelMessage } from "../types.ts";
+import type { FetchBody, ModelMessage } from "./types.ts";
 
 export class Localrouter {
   private url?: string;

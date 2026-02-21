@@ -1,10 +1,5 @@
 import * as path from "@std/path";
-import type {
-  FetchBody,
-  Model,
-  ModelMessage,
-  ModelResponse,
-} from "../types.ts";
+import type { FetchBody, Model, ModelMessage, ModelResponse } from "./types.ts";
 
 export class Openrouter {
   private openrouter_api_key: string;

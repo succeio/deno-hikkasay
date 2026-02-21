@@ -2,7 +2,7 @@ import type {
   InlineQuery,
   InlineQueryResultArticle,
   Message,
-} from "../types.ts";
+} from "./types.ts";
 import { Openrouter } from "./openrouter.ts";
 import { TelegramBot } from "./telegrambot.ts";
 

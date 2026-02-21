@@ -6,7 +6,7 @@ import type {
   TelegramBot as TelegramBotInterface,
   TelegramUpdate,
   User,
-} from "../types.ts";
+} from "./types.ts";
 
 export class TelegramBot extends EventTarget implements TelegramBotInterface {
   private token: string;
