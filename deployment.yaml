@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hikkasay-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hikkasay
+  template:
+    metadata:
+      labels:
+        app: hikkasay
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: bot
+          image: hikkasay-bot:v1
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: hikkasay-secrets
+            - configMapRef:
+                name: hikkasay-config
+          volumeMounts:
+            - name: storage
+              mountPath: /app/data
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: hikkasay-data-pvc
