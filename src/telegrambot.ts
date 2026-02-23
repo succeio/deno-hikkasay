@@ -1,4 +1,5 @@
 import type {
+  BodyPayload,
   BotEventPayloads,
   InlineQueryResultArticle,
   Message,
@@ -34,19 +35,34 @@ export class TelegramBot extends EventTarget implements TelegramBotInterface {
     while (this.running) {
       try {
         const response = await fetch(
-          `${this.apiUrl}/getUpdates?offset=${this.offset}&timeout=300`,
+          `${this.apiUrl}/getUpdates?offset=${this.offset}&timeout=120`,
         );
-        const data = await response.json();
 
-        if (data.ok && data.result) {
+        if (!response.ok) {
+          throw new Error(`Статус API: ${response.status}`);
+        }
+
+        const data: { ok: boolean; result: TelegramUpdate[] } = await response
+          .json();
+
+        if (data.ok && data.result.length > 0) {
           for (const update of data.result) {
-            this.offset = update.update_id + 1;
             this.handleUpdate(update);
+            this.offset = update.update_id + 1;
           }
         }
-      } catch (err) {
-        console.error("Ошибка:", err);
-        await new Promise((r) => setTimeout(r, 5000));
+      } catch (error) {
+        if (
+          error instanceof TypeError &&
+          error.message.includes("peer closed connection")
+        ) {
+          console.warn(
+            "Соединение было сброшено сервером (TLS EOF). Переподключение...",
+          );
+        } else {
+          console.error("Критическая ошибка при getUpdates:", error);
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
       }
     }
   }
@@ -70,32 +86,64 @@ export class TelegramBot extends EventTarget implements TelegramBotInterface {
     }
   }
 
+  private async api<T>(
+    method: string,
+    payload: BodyPayload,
+  ): Promise<T | null> {
+    try {
+      // if (payload.results && typeof payload.results !== "string") {
+      //   payload.results = JSON.stringify(payload.results);
+      // }
+
+      const response = await fetch(`${this.apiUrl}/${method}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        console.error(`Telegram API Error [${method}]:`, data.description);
+        return null;
+      }
+
+      return data.result as T;
+    } catch (error) {
+      if (
+        error instanceof TypeError &&
+        error.message.includes("peer closed connection")
+      ) {
+        console.warn(
+          `Отъеб лонг полинга при вызове ${method}. Соединение разорвано.`,
+        );
+      } else {
+        console.error(`Ошибка при вызове ${method}:`, error);
+      }
+      return null;
+    }
+  }
+
   async sendMessage(
     chatId: number,
     text: string,
     options?: SendMessageOptions,
-  ): Promise<Message> {
-    const response = await fetch(`${this.apiUrl}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, ...options }),
+  ): Promise<Message | null> {
+    return await this.api<Message>("sendMessage", {
+      chat_id: chatId,
+      text,
+      ...options,
     });
-    const msg = await response.json();
-    return msg;
   }
 
   async answerInlineQuery(
     inlineQueryId: string,
     results: InlineQueryResultArticle[],
   ) {
-    return await fetch(`${this.apiUrl}/answerInlineQuery`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        inline_query_id: inlineQueryId,
-        results: JSON.stringify(results),
-        cache_time: 0,
-      }),
+    return await this.api<boolean>("answerInlineQuery", {
+      inline_query_id: inlineQueryId,
+      results: results,
+      cache_time: 0,
     });
   }
 

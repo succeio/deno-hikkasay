@@ -6,7 +6,6 @@ export class Openrouter {
   private openrouter_token: string;
   private data_dir: string;
   private model_path: string;
-  private url_path: string;
   private free_models?: Model[];
   private model?: string;
   private url: string;
@@ -18,11 +17,6 @@ export class Openrouter {
     const savedModel = await instance.loadModelFromFile();
     if (savedModel) {
       instance.model = savedModel;
-    }
-
-    const savedUrl = await instance.loadUrlFromFile();
-    if (savedUrl) {
-      instance.url = savedUrl;
     }
 
     // 2. Запускаем сетевые дела БЕЗ await, чтобы не блокировать бота
@@ -47,13 +41,10 @@ export class Openrouter {
       );
     }
 
-    this.url = "https://openrouter.ai";
+    this.url = "https://openrouter.ai/api/v1/chat/completions";
 
     Deno.mkdirSync(this.data_dir, { recursive: true });
     this.model_path = path.join(this.data_dir, "model.json");
-
-    Deno.mkdirSync(this.data_dir, { recursive: true });
-    this.url_path = path.join(this.data_dir, "url.json");
   }
 
   private async initNetworkData() {
@@ -70,17 +61,6 @@ export class Openrouter {
       return parsed.model || null;
     } catch {
       await this.saveModelToFile("");
-      return null;
-    }
-  }
-
-  private async loadUrlFromFile(): Promise<string | null> {
-    try {
-      const content = await Deno.readTextFile(this.url_path);
-      const parsed = JSON.parse(content);
-      return parsed.url || null;
-    } catch {
-      await this.savedUrlToFile("");
       return null;
     }
   }
@@ -110,7 +90,7 @@ export class Openrouter {
   }
 
   private async listFreeModels(): Promise<Model[]> {
-    const url = this.url + "/api/v1/models";
+    const url = "https://openrouter.ai/api/v1/models";
     try {
       const response = await fetch(url, {
         headers: { "Authorization": `Bearer ${this.openrouter_api_key}` },
@@ -170,7 +150,7 @@ export class Openrouter {
   }
 
   fetchSettings(prompt: string, model: string) {
-    const url = this.url + "/api/v1/chat/completions";
+    const url = this.url;
     const messages: ModelMessage[] = [];
 
     const systemMessage: ModelMessage = {
@@ -210,13 +190,6 @@ export class Openrouter {
     await Deno.writeTextFile(
       this.model_path,
       JSON.stringify({ model }, null, 2),
-    );
-  }
-
-  private async savedUrlToFile(url: string) {
-    await Deno.writeTextFile(
-      this.url_path,
-      JSON.stringify({ url }, null, 2),
     );
   }
 
@@ -266,11 +239,9 @@ export class Openrouter {
 
     if (this.url.startsWith("https://open")) {
       this.url = local;
-      this.savedUrlToFile(local);
       return "Установлен локальный API";
     } else {
-      this.url = "https://openrouter.ai";
-      this.savedUrlToFile(this.url);
+      this.url = "https://openrouter.ai/api/v1/chat/completions";
       return "Установлен Openrouter API";
     }
   }

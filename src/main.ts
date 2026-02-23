@@ -98,10 +98,10 @@ if (import.meta.main) {
             `Твой предыдущий ответ: ${prewAI}. Мой следующий вопрос: ${userText}`,
           );
 
-          bot.sendMessage(chatId, md(response)), {
+          bot.sendMessage(chatId, md(response), {
             reply_to_message_id: msg.message_id,
             parse_mode: "Markdown",
-          };
+          });
         } catch (error) {
           console.error(error);
           bot.sendMessage(chatId, `Ошибка вызова contextSimulation: ${error}`);

@@ -8,7 +8,7 @@ export interface TelegramBot {
     chatId: number,
     text: string,
     options?: SendMessageOptions,
-  ): Promise<Message>;
+  ): Promise<Message | null>;
 }
 
 export type BotCallback<K extends keyof BotEventPayloads> = (
@@ -69,6 +69,20 @@ export interface InlineQuery {
   offset: string;
 }
 
+export interface AnswerInlineQuery {
+  inline_query_id: string;
+  results: InlineQueryResultBase[] | string;
+  cache_time: number;
+}
+
+export interface SendMessage {
+  chat_id: number;
+  text: string;
+  options?: SendMessageOptions;
+}
+
+export type BodyPayload = SendMessage | AnswerInlineQuery;
+
 export interface InlineQueryResultBase {
   id: string;
 }
@@ -90,8 +104,8 @@ export interface InlineQueryResultArticle extends InlineQueryResultBase {
 export interface Model {
   id: string;
   pricing: { prompt: string };
-  supported_parameters: Array<string>;
-  architecture: {
+  supported_parameters?: Array<string>;
+  architecture?: {
     input_modalities: string;
   };
 }
