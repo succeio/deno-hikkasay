@@ -1,7 +1,7 @@
 export interface TelegramBot {
   on<K extends keyof BotEventPayloads>(
     event: K,
-    callback: (event: BotEventPayloads[K]) => void,
+    callback: BotCallback<K>,
   ): void;
 
   sendMessage(
@@ -10,6 +10,11 @@ export interface TelegramBot {
     options?: SendMessageOptions,
   ): Promise<Message>;
 }
+
+export type BotCallback<K extends keyof BotEventPayloads> = (
+  data: BotEventPayloads[K],
+  eventObj: CustomEvent<BotEventPayloads[K]>,
+) => void;
 
 interface SendBasicOptions {
   message_thread_id?: number | undefined;

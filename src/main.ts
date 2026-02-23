@@ -1,4 +1,5 @@
 import type {
+  BotCallback,
   InlineQuery,
   InlineQueryResultArticle,
   Message,
@@ -21,16 +22,22 @@ if (import.meta.main) {
   const md = (text: string) =>
     text.replace(/\*\*([^\s][\s\S]*?[^\s])\*\*/g, "*$1*");
 
-  bot.start();
-  const openHandler = async (msg: Message) => {
+  const confIdMiddleware: BotCallback<"message"> = (msg, event) => {
     if (msg.chat.id !== chatId) {
+      event.stopImmediatePropagation();
       return;
     }
+  };
 
+  const openHandler: BotCallback<"message"> = async (
+    msg,
+    event,
+  ) => {
     if (msg.text && msg.text.length > 0) {
       const messageText = msg.text.toString().toLowerCase();
 
       if (messageText.startsWith("open")) {
+        event.stopImmediatePropagation();
         const question = messageText.replace("open", "").trim();
         try {
           const modelResponse = await openrouter.chat(question);
@@ -70,16 +77,15 @@ if (import.meta.main) {
   };
 
   const contextSimulationHandler = async (msg: Message) => {
-    if (msg.chat.id !== chatId) {
-      return;
-    }
     if (
       msg.reply_to_message &&
       msg.reply_to_message.from &&
       msg.reply_to_message.from.id === id
     ) {
-      // Проверяем, что сообщение не от бота и что оно не является командой
-      if (msg.from?.is_bot || msg.text?.startsWith("/")) {
+      if (
+        msg.from?.is_bot || msg.text?.startsWith("/") ||
+        msg.text?.startsWith("open")
+      ) {
         return;
       }
 
@@ -92,9 +98,9 @@ if (import.meta.main) {
             `Твой предыдущий ответ: ${prewAI}. Мой следующий вопрос: ${userText}`,
           );
 
-          bot.sendMessage(+chatId, md(response)), {
-            parse_mode: "Markdown",
+          bot.sendMessage(chatId, md(response)), {
             reply_to_message_id: msg.message_id,
+            parse_mode: "Markdown",
           };
         } catch (error) {
           console.error(error);
@@ -158,9 +164,12 @@ if (import.meta.main) {
     }
   };
 
+  bot.on("message", confIdMiddleware);
   bot.on("message", openHandler);
   bot.on("message", contextSimulationHandler);
   bot.on("message", setModelHandler);
   bot.on("message", switchApiHandler);
   bot.on("inline_query", inlineQueryHandler);
+
+  bot.start();
 }

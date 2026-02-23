@@ -101,11 +101,14 @@ export class TelegramBot extends EventTarget implements TelegramBotInterface {
 
   on<K extends keyof BotEventPayloads>(
     event: K,
-    callback: (event: BotEventPayloads[K]) => void,
+    callback: (
+      event: BotEventPayloads[K],
+      eventObj: CustomEvent<BotEventPayloads[K]>,
+    ) => void,
   ) {
     this.addEventListener(event, (e: Event) => {
       const customEvent = e as CustomEvent<BotEventPayloads[K]>;
-      callback(customEvent.detail);
+      callback(customEvent.detail, customEvent);
     });
   }
 }
