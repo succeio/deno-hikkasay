@@ -13,6 +13,8 @@ spec:
       labels:
         app: hikkasay
     spec:
+      imagePullSecrets:
+        - name: ghcr-auth # Тот самый секрет, который мы создали выше
       containers:
         - name: bot
           image: ghcr.io/succeio/deno-hikkasay:latest
