@@ -36,9 +36,9 @@ if (import.meta.main) {
     if (msg.text && msg.text.length > 0) {
       const messageText = msg.text.toString().toLowerCase();
 
-      if (messageText.startsWith("open")) {
+      if (messageText.startsWith("perni")) {
         event.stopImmediatePropagation();
-        const question = messageText.replace("open", "").trim();
+        const question = messageText.replace("perni", "").trim();
         try {
           const modelResponse = await openrouter.chat(question);
           bot.sendMessage(chatId, md(modelResponse), {
@@ -53,29 +53,6 @@ if (import.meta.main) {
     }
   };
 
-  const switchApiHandler = (msg: Message) => {
-    if (msg.chat.id !== chatId) {
-      return;
-    }
-
-    if (msg.text && msg.text.length > 0) {
-      const messageText = msg.text.toString().toLowerCase();
-
-      if (messageText.startsWith("switch")) {
-        try {
-          const status = openrouter.switchApi();
-          bot.sendMessage(chatId, status, {
-            reply_to_message_id: msg.message_id,
-            parse_mode: "Markdown",
-          });
-        } catch (error) {
-          console.error(error);
-          bot.sendMessage(chatId, `Ошибка вызова switch: ${error}`);
-        }
-      }
-    }
-  };
-
   const contextSimulationHandler = async (msg: Message) => {
     if (
       msg.reply_to_message &&
@@ -84,7 +61,7 @@ if (import.meta.main) {
     ) {
       if (
         msg.from?.is_bot || msg.text?.startsWith("/") ||
-        msg.text?.startsWith("open")
+        msg.text?.startsWith("perni")
       ) {
         return;
       }
@@ -168,7 +145,6 @@ if (import.meta.main) {
   bot.on("message", openHandler);
   bot.on("message", contextSimulationHandler);
   bot.on("message", setModelHandler);
-  bot.on("message", switchApiHandler);
   bot.on("inline_query", inlineQueryHandler);
 
   bot.start();

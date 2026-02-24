@@ -5,6 +5,8 @@ metadata:
   namespace: hikkasay
 spec:
   replicas: 1
+  strategy:
+    type: Recreate # Сначала убить старый, потом запустить новый
   selector:
     matchLabels:
       app: hikkasay

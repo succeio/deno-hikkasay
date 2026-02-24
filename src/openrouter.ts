@@ -230,19 +230,4 @@ export class Openrouter {
   get models() {
     return this.free_models ?? [];
   }
-
-  switchApi() {
-    const local = Deno.env.get("LOCALAPI_URL");
-    if (!local) {
-      throw new Error(`Локальный API не установлен`);
-    }
-
-    if (this.url.startsWith("https://open")) {
-      this.url = local;
-      return "Установлен локальный API";
-    } else {
-      this.url = "https://openrouter.ai/api/v1/chat/completions";
-      return "Установлен Openrouter API";
-    }
-  }
 }
