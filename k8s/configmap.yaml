@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hikkasay-config
+  namespace: hikkasay
+data:
+  LOG_LEVEL: "INFO"

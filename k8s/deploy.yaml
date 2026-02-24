@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hikkasay-bot
+  namespace: hikkasay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hikkasay
+  template:
+    metadata:
+      labels:
+        app: hikkasay
+    spec:
+      containers:
+        - name: bot
+          image: ghcr.io/succeio/deno-hikkasay:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: bot-secrets
+            - configMapRef:
+                name: hikkasay-config
+          volumeMounts:
+            - name: storage
+              mountPath: /app/data
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: hikkasay-data-pvc
